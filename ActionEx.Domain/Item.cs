@@ -22,7 +22,7 @@ namespace AuctionEx.Domain
             AddEvent(new ItemCreatedEvent(this));
         }
 
-        protected override void Apply(IDomainEvent<Guid> @event)
+        protected override void Apply(object @event)
         {
             switch (@event)
             {
@@ -31,44 +31,27 @@ namespace AuctionEx.Domain
                     Name = item.Name;
                     CurrentPrice = item.Price;
                     break;
-                case MadeBidEvent bid:
-                    Id = bid.Id;
-                    Name = bid.Name;
-                    CurrentPrice = bid.Price;
-                    break;
             }
         }
 
-        public void MakeBid(double price)
+        protected override void When(object @event)
         {
-            if(price <= CurrentPrice)
-                throw new Exception("Price cannot be lower than current price");
-
-            CurrentPrice = price;
-            AddEvent(new MadeBidEvent(this));
+            switch (@event)
+            {
+                case ItemCreatedEvent item:
+                    Id = item.Id;
+                    Name = item.Name;
+                    CurrentPrice = item.Price;
+                    break;
+            }
         }
-
     }
 
-    internal class MadeBidEvent : BaseDomainEvent<Item, Guid>
-    {
-        private MadeBidEvent() { }
-        public MadeBidEvent(Item item) : base(item)
-        {
-            Id = Guid.NewGuid();
-            Name = item.Name;
-            Price = item.CurrentPrice;
-        }
 
-        public Guid Id { get; set; }
-        public string Name { get; set; }
-        public double Price { get; set; }
-    }
-
-    internal class ItemCreatedEvent : BaseDomainEvent<Item, Guid>
+    public class ItemCreatedEvent
     {
-        private ItemCreatedEvent() { }
-        public ItemCreatedEvent(Item item) : base(item)
+        public ItemCreatedEvent() { }
+        public ItemCreatedEvent(Item item)
         {
             Id = item.Id;
             Name = item.Name;

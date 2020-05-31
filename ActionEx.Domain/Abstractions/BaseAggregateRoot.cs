@@ -10,65 +10,41 @@ namespace AuctionEx.Domain.Abstractions
     public abstract class BaseAggregateRoot<TA, TKey> : BaseEntity<TKey>, IAggregateRoot<TKey>
         where TA : class, IAggregateRoot<TKey>
     {
-        private readonly Queue<IDomainEvent<TKey>> _events = new Queue<IDomainEvent<TKey>>();
+        private readonly Queue<object> _events = new Queue<object>();
+        public IReadOnlyCollection<object> Events => _events.ToImmutableArray();
+        
+        public long Version { get; set; } = -2;
 
-        protected BaseAggregateRoot() { }
+        protected BaseAggregateRoot() 
+        { }
 
         protected BaseAggregateRoot(TKey id) : base(id)
-        {
-        }
+        { }
 
-        public IReadOnlyCollection<IDomainEvent<TKey>> Events => _events.ToImmutableArray();
-
-        public long Version { get; private set; }
 
         public void ClearEvents()
         {
             _events.Clear();
         }
 
-        protected void AddEvent(IDomainEvent<TKey> @event)
+        protected void AddEvent(object @event)
         {
             _events.Enqueue(@event);
 
             Apply(@event);
-
             Version++;
         }
 
-        static BaseAggregateRoot()
+        protected abstract void Apply(object @event);
+        protected abstract void When(dynamic e);
+        public void Load(IEnumerable<ItemCreatedEvent> history)
         {
-            LazyCtor = new Lazy<ConstructorInfo>(() =>
+            foreach (var e in history)
             {
-                var aggregateType = typeof(TA);
-                var ctor = aggregateType.GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public,
-                    null, new Type[0], new ParameterModifier[0]);
-                return ctor;
-            });
+                When(e);
+                Version++;
+            }
         }
 
-        protected abstract void Apply(IDomainEvent<TKey> @event);
-
-        private static readonly Lazy<ConstructorInfo> LazyCtor;
-
-        public static TA Create(IEnumerable<IDomainEvent<TKey>> events)
-        {
-            if (null == events || !events.Any())
-                throw new ArgumentNullException(nameof(events));
-
-            var cTor = LazyCtor.Value;
-            var result = (TA)cTor.Invoke(new object[0]);
-
-            var baseAggregate = result as BaseAggregateRoot<TA, TKey>;
-            if (baseAggregate != null)
-                foreach (var @event in events)
-                {
-                    baseAggregate.AddEvent(@event);
-                }
-
-            result.ClearEvents();
-
-            return result;
-        }
     }
 }

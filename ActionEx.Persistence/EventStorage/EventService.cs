@@ -21,8 +21,6 @@ namespace AuctionEx.Persistence.EventStorage
         {
             if(item == null)
                 throw new ArgumentNullException();
-            if(!item.Events.Any())
-                return;
 
             await _eventRepository.AppendAsync(item);
         }

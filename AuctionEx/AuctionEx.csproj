@@ -18,9 +18,5 @@
     <ProjectReference Include="..\ActionEx.Persistence\AuctionEx.Persistence.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Queries\" />
-  </ItemGroup>
-
 
 </Project>

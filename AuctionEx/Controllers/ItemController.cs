@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AuctionEx.Commands;
+using AuctionEx.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,11 +29,11 @@ namespace AuctionEx.Controllers
             return Ok(result);
         }
 
-        [HttpPost("bid")]
-        public async Task<IActionResult> MakeBid()
+        [HttpGet("get")]
+        public async Task<IActionResult> GetItem()
         {
-            var command = new CreateBidCommand(new Guid("a583c96a-c7e3-4748-81e7-beb0cbd284f7"), 8000);
-            return Ok(await _mediator.Send(command));
+            var query = await _mediator.Send(new GetItemQuery(new Guid("a33fc4ad-dbfa-4313-8533-05ce8a9ca86f")));
+            return Ok(query);
         }
     }
 }

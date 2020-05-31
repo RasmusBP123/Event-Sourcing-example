@@ -7,7 +7,7 @@ namespace AuctionEx.Domain.Abstractions
     public interface IAggregateRoot<out TKey> : IEntity<TKey>
     {
         public long Version { get; }
-        IReadOnlyCollection<IDomainEvent<TKey>> Events { get; }
+        IReadOnlyCollection<object> Events { get; }
         void ClearEvents();
     }
 }

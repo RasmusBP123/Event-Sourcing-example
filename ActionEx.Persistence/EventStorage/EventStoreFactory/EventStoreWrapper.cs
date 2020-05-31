@@ -34,31 +34,9 @@ namespace AuctionEx.Persistence.EventStorage.EventStoreFactory
 
         private IEventStoreConnection SetupConnection()
         {
-            var settings = ConnectionSettings.Create()
-                // .EnableVerboseLogging()
-                // .UseConsoleLogger()
-                .Build();
+            var settings = ConnectionSettings.Create().Build();
             var connection = EventStoreConnection.Create(settings, _connString);
 
-            connection.ErrorOccurred += async (s, e) =>
-            {
-                _logger.LogWarning(e.Exception,
-                    $"an error has occurred on the Eventstore connection: {e.Exception.Message} . Trying to reconnect...");
-                connection = SetupConnection();
-                await connection.ConnectAsync();
-            };
-            connection.Disconnected += async (s, e) =>
-            {
-                _logger.LogWarning($"The Evenstore connection has dropped. Trying to reconnect...");
-                connection = SetupConnection();
-                await connection.ConnectAsync();
-            };
-            connection.Closed += async (s, e) =>
-            {
-                _logger.LogWarning($"The Evenstore connection was closed: {e.Reason}. Opening new connection...");
-                connection = SetupConnection();
-                await connection.ConnectAsync();
-            };
             return connection;
         }
 
